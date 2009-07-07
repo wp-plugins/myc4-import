@@ -16,6 +16,7 @@ function myc4_get_image($dir,$img)
 	if(!is_file($dir.$img)){
 		if($fc=file_get_contents('http://www.myc4.com'.$img)){
 			if(file_put_contents($dir.$img,$fc))return true;
+			else echo "error writing file: $dir.$img";
 		}
 	}
 	return false;
@@ -97,10 +98,11 @@ function get_myc4RSS($status='publish') {
 	$entries=$xpath->query('//item');
 	$c=0;
 	foreach ($entries as $entry) {
+		$b=array();
 		$b['name']=$b['title']=$entry->getElementsByTagName('title')->item(0)->nodeValue;
 		$description=$entry->getElementsByTagName('description')->item(0)->nodeValue;
 		$b['link']=$entry->getElementsByTagName('link')->item(0)->nodeValue;
-		if(!preg_match('/OpportunityId=([0-9]+)/',$b['link'],$m)){
+		if(!preg_match('@Invest/Loans/View/([0-9]+)@',$b['link'],$m)){
 			echo "Error while parsing myc4 link for opportunity id. the link is: ".$b['link']."<br />";
 			exit;
 		}
@@ -149,29 +151,44 @@ function get_myc4RSS($status='publish') {
 			if(preg_match("@'([^']+)'@",$st,$m)){
 				$b['avurl']=$m[1];
 			}
-			$ents=$xp3->query('//*[@class="investBox"]/div[@class="leftDiv"]/img/@src');
+			$ents=$xp3->query('//img[@id="ctl00_ctl00_Middle_Main_uiCountryFlag"]/@src');
 			$b['cflag']=$ents->item(0)->nodeValue;
 			
-			$ents=$xp3->query('//*[@class="investBox"]/div[@class="leftDiv"]/img/@title');
-			$b['cname']=$ents->item(0)->nodeValue;
+			$ents=$xp3->query('//img[@id="ctl00_ctl00_Middle_Main_uiCountryFlag"]/@title');
+			$b['cname']=trim($ents->item(0)->nodeValue);
 		
-			$ents=$xp3->query('//*[@class="investBox"]/div[@class="rightDiv"]/text()');
-			$b['bname']=trim($ents->item(1)->nodeValue);
-			$b['shortDesc']=trim($ents->item(2)->nodeValue);
+			$ents=$xp3->query('//*[@class="oppertunityName"]/text()');
+			foreach ($ents as $entry) {
+				$b['bname'].=$entry->nodeValue;
+			}
+			$b['bname']=trim($b['bname']);
+			
+			$b['bname']=trim($ents->item(0)->nodeValue);
+			$ents=$xp3->query('//*[@class="oppertunityBodyText"]/text()');
+			foreach ($ents as $entry) {
+				$b['shortDesc'].=$entry->nodeValue;
+			}
+			$b['shortDesc']=trim($b['shortDesc']);
 
 			// get background details
-			$fc=file_get_contents($b['link']."&activeView=uiBackgroundView");
+			$fc=file_get_contents($b['link']."/Background");
 			$d3=new domDocument;
 			@$d3->loadHTML($fc);
 			if(!$d3){
-				echo "error while parsing op background page: ${b['link']}&activeView=uiBackgroundView";
+				echo "error while parsing op background page: ${b['link']}/Background";
 				exit;
 			}
 			$xp3= new DOMXPath($d3);
-			$ents=$xp3->query('//*[@id="centertext"]/div/p/text()');
-			$b['longDesc']=trim(trim($ents->item(0)->nodeValue,':'));
-			$ents=$xp3->query('//*[@id="centertext"]/div/p/img/@src');
-			$b['bigImage']=$ents->item(0)->nodeValue;
+			$ents=$xp3->query('//*[@id="centertext"]/div[@class="Panel"]/div/text()');
+			$b['longDesc']=trim(trim($ents->item(1)->nodeValue,':'));
+			
+			$ents=$xp3->query('//*[@id="ctl00_ctl00_Middle_Main_uiBusinessView_pictures"]/ul/li/@style');
+			$bitmp=$ents->item(0)->nodeValue;
+			echo "bitmp=$bitmp<br />";
+			if(preg_match('/src=([^\)]+)/',$bitmp,$m)){	
+				$b['bigImage']=urldecode($m[1]);
+			}
+
 
 
 			//echo nl2br(print_r($b,true));	
@@ -180,7 +197,7 @@ function get_myc4RSS($status='publish') {
 			$b['largeimg']=get_bloginfo('wpurl')."/wp-content/plugins/myc4-import".$b['bigImage'];
 			$b['cimg']=get_bloginfo('wpurl')."/wp-content/plugins/myc4-import".$b['cflag'];
 			
-
+			echo nl2br(print_r($b,true));
 			myc4_get_image($dir,$b['avurl']);
 			myc4_get_image($dir,$b['bigImage']);
 			myc4_get_image($dir,$b['cflag']);
@@ -217,7 +234,7 @@ function get_myc4RSS($status='publish') {
 function myc4_subpanel()
 {
 	if(get_option('myc4_post_title')==""){
-		update_option('myc4_post_title','MYC4 profile <?=$b[\'name\']?> - <?=$b[\'bname\']?>');
+		update_option('myc4_post_title','MYC4 profile <?=$b[\'name\']?>');
 	}
 	if(get_option('myc4_post_content')==""){
 		update_option('myc4_post_content','

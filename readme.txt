@@ -34,9 +34,16 @@ The "MYC4 Import" plugin can be installed by following this steps:
 	3. Activate the plugin
 
 	4. Inside the Wordpress admin, go to Settings > MYC4 import, adjust the parameters according to your needs, and save them.
+	The format for your MYC4 feed link is: https://www.myc4.com/RSS/UserBidsRSS.ashx?c=<UserID>
+	To find your UserId view your investor profile from https://www.myc4.com/Invest/Investors and look at the last number in the 
+	url, that's your MYC4 id
 
 	5. click Import and Publish Bids to fetch your active bids from myc4
 	and import them as posts in your blog.
 
+== Changelog ==
 
+= 0.2 =
+* modified to work with the new myc4 site layout
+* added details about the MYC4 rss link
 
