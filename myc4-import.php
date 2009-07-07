@@ -184,7 +184,6 @@ function get_myc4RSS($status='publish') {
 			
 			$ents=$xp3->query('//*[@id="ctl00_ctl00_Middle_Main_uiBusinessView_pictures"]/ul/li/@style');
 			$bitmp=$ents->item(0)->nodeValue;
-			echo "bitmp=$bitmp<br />";
 			if(preg_match('/src=([^\)]+)/',$bitmp,$m)){	
 				$b['bigImage']=urldecode($m[1]);
 			}
@@ -197,7 +196,6 @@ function get_myc4RSS($status='publish') {
 			$b['largeimg']=get_bloginfo('wpurl')."/wp-content/plugins/myc4-import".$b['bigImage'];
 			$b['cimg']=get_bloginfo('wpurl')."/wp-content/plugins/myc4-import".$b['cflag'];
 			
-			echo nl2br(print_r($b,true));
 			myc4_get_image($dir,$b['avurl']);
 			myc4_get_image($dir,$b['bigImage']);
 			myc4_get_image($dir,$b['cflag']);
