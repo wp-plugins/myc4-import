@@ -3,7 +3,7 @@ Contributors: prof. David Costa, Mihai Secasiu
 Tags: myc4 microfinance
 Requires at least: 2.7
 Tested up to: 2.7
-Stable tag: 0.1
+Stable tag: 0.4
 
 MYC4 bid importer 
 
@@ -61,6 +61,10 @@ The "MYC4 Import" plugin can be installed by following this steps:
 	and import them as posts in your blog.
 
 == Changelog ==
+
+= 0.4 =
+* added dashboard widget with rss feeds from http://microfinance.fm
+* bumped stable version number
 
 = 0.3 =
 * removed some debugging text

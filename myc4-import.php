@@ -3,7 +3,7 @@
 Plugin Name: MYC4 importer 
 Plugin URI: http://microfinance.fm/myc4-importer
 Description: Allows you to import your bids on microfinance site <a href="http://myc4.com">MYC4</a>  into your blog as posts. Plugin idea by <a href="http://david.fm">prof. David Costa</a> of <a href="http://college.ch">Robert Kennedy College</a>. 
-Version: 0.1
+Version: 0.4
 License: GPL
 Author: Mihai Secasiu
 Author URI: http://patchlog.com
@@ -380,5 +380,54 @@ function myc4_deactivation() {
 	wp_clear_scheduled_hook('myc4_import_event');
 }
 
+// ripped from the socialble plugin
+if (!function_exists('myc4_db_widget')) {
+	function myc4_text_limit( $text, $limit, $finish = ' [&hellip;]') {
+		if( strlen( $text ) > $limit ) {
+	    	$text = substr( $text, 0, $limit );
+			$text = substr( $text, 0, - ( strlen( strrchr( $text,' ') ) ) );
+			$text .= $finish;
+		}
+		return $text;
+	}
+	
+	function myc4_db_widget($image = 'normal', $num = 3, $excerptsize = 250, $showdate = true) {
+		require_once(ABSPATH.WPINC.'/rss.php');  
+		if ( $rss = fetch_rss( 'http://feeds2.feedburner.com/microfinancefm' ) ) {
+			echo '<div class="rss-widget">';
+			if ($image == 'normal') {
+				echo '<a href="http://microfinance.fm/" title="Go to Microfinance.fm"><img src="http://microfinance.fm/wp-content/themes/microfinance/microfinance.png" class="alignright" alt="Microfinance.fm"/></a>';			
+			} else {
+				echo '<a href="http://microfinance.fm/" title="Go to Microfinance.fm"><img width="130" src="http://microfinance.fm/wp-content/themes/microfinance/microfinance.png" class="alignright" alt="Microfinance.fm"/></a>';			
+			}
+			echo '<ul>';
+			$rss->items = array_slice( $rss->items, 0, $num );
+			foreach ( (array) $rss->items as $item ) {
+				echo '<li>';
+				echo '<a class="rsswidget" href="'.clean_url( $item['link'], $protocolls=null, 'display' ).'">'. htmlentities($item['title']) .'</a> ';
+				if ($showdate)
+					echo '<span class="rss-date">'. date('F j, Y', strtotime($item['pubdate'])) .'</span>';
+				echo '<div class="rssSummary">'. myc4_text_limit($item['summary'],$excerptsize) .'</div>';
+				echo '</li>';
+			}
+			echo '</ul>';
+			echo '<div style="border-top: 1px solid #ddd; padding-top: 10px; text-align:center;">';
+			echo '<a href="http://feeds2.feedburner.com/microfinancefm"><img src="'.get_bloginfo('wpurl').'/wp-includes/images/rss.png" alt=""/> Subscribe with RSS</a>';
+			if ($image == 'normal') {
+				echo ' &nbsp; &nbsp; &nbsp; ';
+			} else {
+				echo '<br/>';
+			}
+			echo '</div>';
+			echo '</div>';
+		}
+	}
+ 
+	function myc4_widget_setup() {
+	    wp_add_dashboard_widget( 'myc4_db_widget' , 'The Latest news from Microfinance.fm' , 'myc4_db_widget');
+	}
+ 
+	add_action('wp_dashboard_setup', 'myc4_widget_setup');
+}
 
 
