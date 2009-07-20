@@ -3,7 +3,7 @@
 Plugin Name: MYC4 importer 
 Plugin URI: http://microfinance.fm/myc4-importer
 Description: Allows you to import your bids on microfinance site <a href="http://myc4.com">MYC4</a>  into your blog as posts. Plugin idea by <a href="http://david.fm">prof. David Costa</a> of <a href="http://college.ch">Robert Kennedy College</a>. 
-Version: 0.4
+Version: 0.5
 License: GPL
 Author: Mihai Secasiu
 Author URI: http://patchlog.com
@@ -16,7 +16,7 @@ function myc4_get_image($dir,$img)
 	if(!is_file($dir.$img)){
 		if($fc=file_get_contents('http://www.myc4.com'.$img)){
 			if(file_put_contents($dir.$img,$fc))return true;
-			else echo "error writing file: $dir.$img";
+			else echo "error writing file: $dir$img";
 		}
 	}
 	return false;
@@ -72,10 +72,12 @@ function myc4_eval($eval_str,$b)
 function get_myc4RSS($status='publish') {
 
 	$cat=get_option('myc4_cat');
+	$nt=get_option('myc4_notify_twitter');
+
 	if($cat=="")$cat=array(1);
 	else $cat=array($cat);
 
-	$dir=dirname(__FILE__);
+	$dir=dirname(__FILE__)."/../../myc4/";
 
 	// get the feeds
 	$rss_url=get_option('myc4_feed_link');
@@ -192,26 +194,28 @@ function get_myc4RSS($status='publish') {
 
 			//echo nl2br(print_r($b,true));	
 		
-			$b['smallimg']=get_bloginfo('wpurl')."/wp-content/plugins/myc4-import".$b['avurl'];
-			$b['largeimg']=get_bloginfo('wpurl')."/wp-content/plugins/myc4-import".$b['bigImage'];
-			$b['cimg']=get_bloginfo('wpurl')."/wp-content/plugins/myc4-import".$b['cflag'];
+			$b['smallimg']=get_bloginfo('wpurl')."/wp-content/myc4".$b['avurl'];
+			$b['largeimg']=get_bloginfo('wpurl')."/wp-content/myc4".$b['bigImage'];
+			$b['cimg']=get_bloginfo('wpurl')."/wp-content/myc4".$b['cflag'];
 			
 			myc4_get_image($dir,$b['avurl']);
 			myc4_get_image($dir,$b['bigImage']);
 			myc4_get_image($dir,$b['cflag']);
 	
-
+//echo nl2br(print_r($b,true));
 			$p['post_title']=myc4_eval($title_template,$b);
 			$p['post_content']=myc4_eval($post_template,$b);
 
-			$p['post_status'] = $status;
+			$p['post_status'] = 'draft';
 			$p['post_date']=myc4_bdate($b['date']);
 			$p['post_category']=$cat;
 			if($pid=wp_insert_post($p)){
-				add_post_meta($pid,'myc4_id',$b['id']);
-				$np['ID']=$pid;
-				$np['post_date']=myc4_bdate($b['date']);
-				wp_update_post($np);
+				add_post_meta($pid,'myc4_id',$b['id'],true);
+				if (!update_post_meta($pid, 'aktt_notify_twitter', ($nt==1)?"yes":"no")) {
+					add_post_meta($pid,'aktt_notify_twitter',($nt==1)?"yes":"no");
+				}
+				wp_publish_post($pid);
+				
 			}
 			$c++;
 		
@@ -250,13 +254,16 @@ Interest Rate: <?=$b[\'irate\']?><br />
 <a href="<?=$b[\'link\']?>">Place your investment here</a>
 ');
 	}
-
+	if(get_option('myc4_notify_twitter')==""){
+		update_option('myc4_notify_twitter','0');
+	}
 	if(isset($_POST['save_myc4_settings']) || isset($_POST['publish_myc4'])){
 		update_option('myc4_feed_link',$_POST['myc4_feed_link']);
 		update_option('myc4_cat',$_POST['myc4_cat']);		
 		update_option('myc4_post_title',stripslashes($_POST['myc4_post_title']));
 		update_option('myc4_post_content',stripslashes($_POST['myc4_post_content']));
 		update_option('myc4_autoimport',stripslashes($_POST['myc4_autoimport']));
+		update_option('myc4_notify_twitter',intval($_POST['myc4_notify_twitter']));
 		if($_POST['myc4_autoimport']!='No'){
 			$aa=date('Y');
 			preg_match('/^[0-9]{4}$/',$_POST['aa']) and $aa=$_POST['aa'];
@@ -347,13 +354,20 @@ Interest Rate: <?=$b[\'irate\']?><br />
 			<textarea cols="60" rows="10" name="myc4_post_content" id="myc4_post_content" ><?php echo get_option('myc4_post_content'); ?></textarea>
 			</td>
          		</tr>
-         	
+         		<tr valign="top">
+			<th scope="row">Notify Twitter:</th>
+			<td>	<select name="myc4_notify_twitter" id="myc4_notify_twitter">
+				<?php $nt=get_option('myc4_notify_twitter'); ?>
+				<option value="0" <?php if($nt!=1){ ?> selected <? } ?>>No</option>
+				<option value="1" <?php if($nt==1){ ?> selected <? } ?>>Yes</option>
+				</select> ( for "yes" it requires the <a href="http://wordpress.org/extend/plugins/twitter-tools/">twitter tools plugin</a> ) 
+			</td>
 		</table>
 
         	<div class="submit">
 	        	<input type="submit" name="save_myc4_settings" value="<?php _e('Save Settings', 'save_myc4_settings') ?>" />
 	<!--		<input type="submit" name="import_myc4" value="<?php _e('Import Bids', 'myc4_import_bids') ?>" /> -->
-			<input type="submit" name="publish_myc4" value="<?php _e('Import and Publish Bids', 'myc4_import_and_publish_bids') ?>" />
+			<input type="submit" name="publish_myc4" value="<?php _e('Import and save settings', 'myc4_import_and_publish_bids') ?>" />
 	        </div>
 		<div align="center">Plugin developed by <a href="http://patchlog.com">Mihai Secasiu</a> for the <a href="http://microfinance.fm">Microfinance</a> blog of <a href="http://david.fm">prof. David Costa</a></div>
 	</form>
