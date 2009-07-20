@@ -76,6 +76,9 @@ available anymore.
 
 == Changelog ==
 
+= 0.6 = 
+* small update to the documentation
+
 = 0.5 =
 * changed the data dir to wp-content/myc4 insead of the plugin dir so that 
 plugin upgrades would not delete the data
