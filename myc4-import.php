@@ -3,7 +3,7 @@
 Plugin Name: MYC4 importer 
 Plugin URI: http://microfinance.fm/myc4-importer
 Description: Allows you to import your bids on microfinance site <a href="http://myc4.com">MYC4</a>  into your blog as posts. Plugin idea by <a href="http://david.fm">prof. David Costa</a> of <a href="http://college.ch">Robert Kennedy College</a>. 
-Version: 0.5
+Version: 0.6
 License: GPL
 Author: Mihai Secasiu
 Author URI: http://patchlog.com

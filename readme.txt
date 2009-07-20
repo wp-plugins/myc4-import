@@ -3,7 +3,7 @@ Contributors: prof. David Costa, mihai
 Tags: myc4 microfinance
 Requires at least: 2.7
 Tested up to: 2.8
-Stable tag: 0.5
+Stable tag: 0.6
 
 MYC4 bid importer 
 
@@ -50,8 +50,10 @@ The "MYC4 Import" plugin can be installed by following this steps:
 	<?=$b['cimg']?> - full link to country flag image ( locally hosted )
 	<?=$b['largeimg']?> - full link to large image ( locally hosted )
 	<?=$b['cname']?> - country name
-	<?=$b['shortDesc']?> - short description, the one you can see on the loan page
-	<?=$b['longDesc']?> - long description, this is the one from the "Background" 
+	<?=$b['shortDesc']?> - short description, the one you can see on the loan 
+	page
+	<?=$b['longDesc']?> - long description, this is the one from the 
+	"Background" 
 	page
 	<?=$b['largeimg']?> - the first large image from the "Background" page. 
 	<?=$b['amount']?> - bid amount
@@ -63,9 +65,14 @@ The "MYC4 Import" plugin can be installed by following this steps:
 	and import them as posts in your blog.
 
 == Upgrade ==
-If you upgrade from version 0.4 and bellow you will have to delete all 
-previously imported posts and reimport otherwise the images in those posts will
-not be available anymore.
+If you want to upgrade from version 0.4 and bellow you will have to move the 
+Images and Resources folders from the plugin directory to the wp-content/myc4 
+directory before you upgrade. This way the images are saved. 
+
+If you didn't read this before you upgraded you will have to delete the 
+imported posts and reimport otherwise the images in those posts will not be 
+available anymore.
+
 
 == Changelog ==
 
